@@ -10,11 +10,8 @@ use azalea_protocol::{
 use bevy_ecs::prelude::*;
 use parking_lot::Mutex;
 use thiserror::Error;
-use tokio::{
-    runtime,
-    sync::mpsc::{self, error::SendError},
-};
-use tracing::{debug, error};
+use tokio::sync::mpsc::{self, error::SendError};
+use tracing::error;
 
 /// A component for clients that can read and write packets to the server. This
 /// works with raw bytes, so you'll have to serialize/deserialize packets
@@ -38,6 +35,7 @@ pub struct RawConnection {
 #[derive(Clone)]
 struct RawConnectionReader {
     pub incoming_packet_queue: Arc<Mutex<Vec<Vec<u8>>>>,
+    pub run_schedule_sender: mpsc::UnboundedSender<()>,
 }
 #[derive(Clone)]
 struct RawConnectionWriter {
@@ -63,7 +61,7 @@ pub enum WritePacketError {
 
 impl RawConnection {
     pub fn new(
-        rt: runtime::Handle,
+        run_schedule_sender: mpsc::UnboundedSender<()>,
         connection_protocol: ConnectionProtocol,
         raw_read_connection: RawReadConnection,
         raw_write_connection: RawWriteConnection,
@@ -74,16 +72,18 @@ impl RawConnection {
 
         let reader = RawConnectionReader {
             incoming_packet_queue: incoming_packet_queue.clone(),
+            run_schedule_sender,
         };
         let writer = RawConnectionWriter {
             outgoing_packets_sender,
         };
 
-        let read_packets_task = rt.spawn(reader.clone().read_task(raw_read_connection));
-        let write_packets_task = rt.spawn(RawConnectionWriter::write_task(
-            raw_write_connection,
-            outgoing_packets_receiver,
-        ));
+        let read_packets_task = tokio::spawn(reader.clone().read_task(raw_read_connection));
+        let write_packets_task = tokio::spawn(
+            writer
+                .clone()
+                .write_task(raw_write_connection, outgoing_packets_receiver),
+        );
 
         Self {
             reader,
@@ -138,6 +138,10 @@ impl RawConnectionReader {
                 Ok(raw_packet) => {
                     self.incoming_packet_queue.lock().push(raw_packet);
                     // tell the client to run all the systems
+                    if self.run_schedule_sender.send(()).is_err() {
+                        // the client was dropped
+                        break;
+                    }
                 }
                 Err(error) => {
                     if !matches!(*error, ReadPacketError::ConnectionClosed) {
@@ -155,6 +159,7 @@ impl RawConnectionWriter {
     /// packets to the server. It's like this so writing packets doesn't need to
     /// be awaited.
     pub async fn write_task(
+        self,
         mut write_conn: RawWriteConnection,
         mut outgoing_packets_receiver: mpsc::UnboundedReceiver<Vec<u8>>,
     ) {
@@ -164,7 +169,6 @@ impl RawConnectionWriter {
                 break;
             };
         }
-        println!("hi");
         // receiver is automatically closed when it's dropped
     }
 }

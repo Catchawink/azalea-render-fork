@@ -38,6 +38,7 @@ use crate::{
     movement::MoveEventsSet,
     packet_handling::game::{handle_send_packet_event, SendPacketEvent},
     respawn::perform_respawn,
+    Client,
 };
 
 /// A plugin that allows clients to interact with blocks in the world.
@@ -64,6 +65,21 @@ impl Plugin for InteractPlugin {
                         .after(MoveEventsSet),
                 ),
             );
+    }
+}
+
+impl Client {
+    /// Right click a block. The behavior of this depends on the target block,
+    /// and it'll either place the block you're holding in your hand or use the
+    /// block you clicked (like toggling a lever).
+    ///
+    /// Note that this may trigger anticheats as it doesn't take into account
+    /// whether you're actually looking at the block.
+    pub fn block_interact(&mut self, position: BlockPos) {
+        self.ecs.lock().send_event(BlockInteractEvent {
+            entity: self.entity,
+            position,
+        });
     }
 }
 
@@ -349,10 +365,7 @@ fn update_modifiers_for_held_item(
         };
         attributes
             .attack_speed
-            .remove(&azalea_entity::attributes::BASE_ATTACK_SPEED_UUID);
-        attributes
-            .attack_speed
-            .insert(azalea_entity::attributes::tool_attack_speed_modifier(
+            .insert(azalea_entity::attributes::base_attack_speed_modifier(
                 added_attack_speed,
             ))
             .unwrap();

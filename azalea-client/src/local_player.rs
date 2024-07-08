@@ -2,16 +2,21 @@ use std::{collections::HashMap, io, sync::Arc};
 
 use azalea_auth::game_profile::GameProfile;
 use azalea_core::game_type::GameMode;
+use azalea_entity::Dead;
 use azalea_protocol::packets::game::clientbound_player_abilities_packet::ClientboundPlayerAbilitiesPacket;
 use azalea_world::{Instance, PartialInstance};
 use bevy_ecs::{component::Component, prelude::*};
 use derive_more::{Deref, DerefMut};
 use parking_lot::RwLock;
 use thiserror::Error;
+use tokio::sync::mpsc;
 use tracing::error;
 use uuid::Uuid;
 
-use crate::{ClientInformation, PlayerInfo};
+use crate::{
+    events::{Event as AzaleaEvent, LocalPlayerEvents},
+    ClientInformation, PlayerInfo,
+};
 
 /// A component that keeps strong references to our [`PartialInstance`] and
 /// [`Instance`] for local players.
@@ -125,6 +130,13 @@ impl InstanceHolder {
     }
 }
 
+/// Send the "Death" event for [`LocalEntity`]s that died with no reason.
+pub fn death_event(query: Query<&LocalPlayerEvents, Added<Dead>>) {
+    for local_player_events in &query {
+        local_player_events.send(AzaleaEvent::Death(None)).unwrap();
+    }
+}
+
 #[derive(Error, Debug)]
 pub enum HandlePacketError {
     #[error("{0}")]
@@ -133,6 +145,8 @@ pub enum HandlePacketError {
     Io(#[from] io::Error),
     #[error(transparent)]
     Other(#[from] anyhow::Error),
+    #[error("{0}")]
+    Send(#[from] mpsc::error::SendError<AzaleaEvent>),
 }
 
 impl<T> From<std::sync::PoisonError<T>> for HandlePacketError {

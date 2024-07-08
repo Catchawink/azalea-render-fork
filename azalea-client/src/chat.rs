@@ -21,7 +21,10 @@ use std::{
 };
 use uuid::Uuid;
 
-use crate::packet_handling::game::{handle_send_packet_event, SendPacketEvent};
+use crate::{
+    client::Client,
+    packet_handling::game::{handle_send_packet_event, SendPacketEvent},
+};
 
 /// A chat packet, either a system message or a chat message.
 #[derive(Debug, Clone, PartialEq)]
@@ -128,6 +131,50 @@ impl ChatPacket {
     }
 }
 
+impl Client {
+    /// Send a chat message to the server. This only sends the chat packet and
+    /// not the command packet, which means on some servers you can use this to
+    /// send chat messages that start with a `/`. The [`Client::chat`] function
+    /// handles checking whether the message is a command and using the
+    /// proper packet for you, so you should use that instead.
+    pub fn send_chat_packet(&self, message: &str) {
+        self.ecs.lock().send_event(SendChatKindEvent {
+            entity: self.entity,
+            content: message.to_string(),
+            kind: ChatPacketKind::Message,
+        });
+        self.run_schedule_sender.send(()).unwrap();
+    }
+
+    /// Send a command packet to the server. The `command` argument should not
+    /// include the slash at the front.
+    pub fn send_command_packet(&self, command: &str) {
+        self.ecs.lock().send_event(SendChatKindEvent {
+            entity: self.entity,
+            content: command.to_string(),
+            kind: ChatPacketKind::Command,
+        });
+        self.run_schedule_sender.send(()).unwrap();
+    }
+
+    /// Send a message in chat.
+    ///
+    /// ```rust,no_run
+    /// # use azalea_client::{Client, Event};
+    /// # async fn handle(bot: Client, event: Event) -> anyhow::Result<()> {
+    /// bot.chat("Hello, world!");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn chat(&self, content: &str) {
+        self.ecs.lock().send_event(SendChatEvent {
+            entity: self.entity,
+            content: content.to_string(),
+        });
+        self.run_schedule_sender.send(()).unwrap();
+    }
+}
+
 pub struct ChatPlugin;
 impl Plugin for ChatPlugin {
     fn build(&self, app: &mut App) {
@@ -229,19 +276,7 @@ fn handle_send_chat_kind_event(
             .get(),
             ChatPacketKind::Command => {
                 // TODO: chat signing
-                ServerboundChatCommandPacket {
-                    command: content,
-                    timestamp: SystemTime::now()
-                        .duration_since(UNIX_EPOCH)
-                        .expect("Time shouldn't be before epoch")
-                        .as_millis()
-                        .try_into()
-                        .expect("Instant should fit into a u64"),
-                    salt: azalea_crypto::make_salt(),
-                    argument_signatures: vec![],
-                    last_seen_messages: LastSeenMessagesUpdate::default(),
-                }
-                .get()
+                ServerboundChatCommandPacket { command: content }.get()
             }
         };
 
