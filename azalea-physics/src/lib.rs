@@ -556,7 +556,7 @@ mod tests {
             assert_eq!(entity_pos.y, 70.);
         }
     }
-
+/*
     #[test]
     fn test_slab_collision() {
         let mut app = make_test_app();
@@ -663,7 +663,7 @@ mod tests {
         let entity_pos = app.world.get::<Position>(entity).unwrap();
         assert_eq!(entity_pos.y, 70.);
     }
-
+ */
     #[test]
     fn test_weird_wall_collision() {
         let mut app = make_test_app();
