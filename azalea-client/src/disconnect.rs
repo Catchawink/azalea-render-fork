@@ -14,7 +14,7 @@ use bevy_ecs::{
 };
 use derive_more::Deref;
 
-use crate::{client::JoinedClientBundle, raw_connection::RawConnection};
+use crate::{client::JoinedClientBundle, events::LocalPlayerEvents, raw_connection::RawConnection};
 
 pub struct DisconnectPlugin;
 impl Plugin for DisconnectPlugin {
@@ -45,7 +45,11 @@ pub fn remove_components_from_disconnected_players(
     mut events: EventReader<DisconnectEvent>,
 ) {
     for DisconnectEvent { entity, .. } in events.read() {
-        commands.entity(*entity).remove::<JoinedClientBundle>();
+        commands
+            .entity(*entity)
+            .remove::<JoinedClientBundle>()
+            // swarm detects when this tx gets dropped to fire SwarmEvent::Disconnect
+            .remove::<LocalPlayerEvents>();
     }
 }
 
