@@ -33,7 +33,7 @@ futures = "0.3.30"
 tracing = "0.1.40"
 nohash-hasher = "0.2.0"
 once_cell = "1.19.0"
-parking_lot = { version = "^0.12.3", features = ["deadlock_detection"] }
+parking_lot = { version = "^0.12.3" }
 regex = "1.10.5"
 thiserror = "^1.0.61"
 tokio = { version = "^1.38.0", features = ["sync"] }
@@ -48,3 +48,4 @@ azalea-inventory = { version = "0.10.0", path = "../azalea-inventory" }
 default = ["log"]
 # enables bevy_log::LogPlugin by default
 log = ["bevy_log"]
+deadlock_detection = ["parking_lot/deadlock_detection"]

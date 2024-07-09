@@ -53,6 +53,7 @@ rand = "0.8.5"
 default = ["log"]
 # enables bevy_log::LogPlugin by default
 log = ["azalea-client/log"]
+deadlock_detection = ["parking_lot/deadlock_detection"]
 
 [[bench]]
 name = "pathfinder"
