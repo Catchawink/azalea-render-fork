@@ -37,6 +37,7 @@ const PATHFINDER_DEBUG_PARTICLES: bool = false;
 
 #[tokio::main]
 async fn main() {
+    /*
     {
         use parking_lot::deadlock;
         use std::thread;
@@ -60,6 +61,7 @@ async fn main() {
             }
         });
     }
+    */
 
     let account = Account::offline(USERNAME);
 
