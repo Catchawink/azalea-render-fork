@@ -222,7 +222,7 @@ dependencies = [
  "parking_lot",
  "priority-queue",
  "rand",
- "rustc-hash",
+ "rustc-hash 1.1.0",
  "thiserror",
  "tokio",
  "tracing",
@@ -282,7 +282,7 @@ dependencies = [
 
 [[package]]
 name = "azalea-buf"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "azalea-buf-macros",
  "byteorder",
@@ -304,7 +304,7 @@ dependencies = [
 
 [[package]]
 name = "azalea-chat"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "azalea-buf",
  "azalea-language",
@@ -358,7 +358,7 @@ dependencies = [
 
 [[package]]
 name = "azalea-core"
-version = "0.10.0"
+version = "0.10.2"
 dependencies = [
  "azalea-buf",
  "azalea-registry",
@@ -534,7 +534,7 @@ dependencies = [
 
 [[package]]
 name = "azalea-world"
-version = "0.10.1"
+version = "0.10.2"
 dependencies = [
  "azalea-block",
  "azalea-buf",
@@ -547,7 +547,7 @@ dependencies = [
  "nohash-hasher",
  "once_cell",
  "parking_lot",
- "rustc-hash",
+ "rustc-hash 2.0.0",
  "serde",
  "serde_json",
  "simdnbt",
@@ -624,7 +624,7 @@ dependencies = [
  "bevy_utils",
  "downcast-rs",
  "fixedbitset",
- "rustc-hash",
+ "rustc-hash 1.1.0",
  "serde",
  "thiserror",
  "thread_local",
@@ -666,7 +666,7 @@ checksum = "eb270c98a96243b29465139ed10bda2f675d00a11904f6588a5f7fc4774119c7"
 dependencies = [
  "proc-macro2",
  "quote",
- "rustc-hash",
+ "rustc-hash 1.1.0",
  "syn",
  "toml_edit",
 ]
@@ -2019,7 +2019,7 @@ dependencies = [
  "pin-project-lite",
  "quinn-proto",
  "quinn-udp",
- "rustc-hash",
+ "rustc-hash 1.1.0",
  "rustls",
  "thiserror",
  "tokio",
@@ -2035,7 +2035,7 @@ dependencies = [
  "bytes",
  "rand",
  "ring",
- "rustc-hash",
+ "rustc-hash 1.1.0",
  "rustls",
  "slab",
  "thiserror",
@@ -2283,6 +2283,12 @@ name = "rustc-hash"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "08d43f7aa6b08d49f382cde6a7982047c3426db949b1424bc4b7ec9ae12c6ce2"
+
+[[package]]
+name = "rustc-hash"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "583034fd73374156e66797ed8e5b0d5690409c9226b22d87cb7f19821c05d152"
 
 [[package]]
 name = "rustc_version"
