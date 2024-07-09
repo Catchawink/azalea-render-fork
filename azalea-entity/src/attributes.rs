@@ -102,6 +102,7 @@ pub fn weapon_attack_speed_modifier(amount: f64) -> AttributeModifier {
         operation: AttributeModifierOperation::Addition,
     }
 }
+<<<<<<< Updated upstream
 pub fn tool_attack_speed_modifier(amount: f64) -> AttributeModifier {
     AttributeModifier {
         uuid: BASE_ATTACK_SPEED_UUID,
@@ -133,3 +134,5 @@ impl McBufWritable for AttributeModifier {
         Ok(())
     }
 }
+=======
+>>>>>>> Stashed changes

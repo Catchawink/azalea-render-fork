@@ -1,5 +1,6 @@
 #![doc = include_str!("../README.md")]
 #![feature(trait_upcasting)]
+#![recursion_limit="128"]
 
 mod behavior;
 mod generated;
@@ -13,7 +14,6 @@ use core::fmt::Debug;
 pub use range::BlockStates;
 use std::{
     any::Any,
-    collections::HashMap,
     io::{Cursor, Write},
 };
 
@@ -28,10 +28,6 @@ pub trait Block: Debug + Any {
     /// Convert the block to an [`azalea_registry::Block`]. This is lossy, as
     /// `azalea_registry::Block` doesn't contain any state data.
     fn as_registry_block(&self) -> azalea_registry::Block;
-
-    fn as_property_map(&self) -> HashMap<String, String>;
-
-    fn get_property(&self, name: &str) -> Option<String>;
 }
 impl dyn Block {
     pub fn downcast_ref<T: Block>(&self) -> Option<&T> {
