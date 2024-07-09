@@ -5,8 +5,7 @@ mod events;
 pub mod prelude;
 
 use azalea_client::{
-    chat::ChatPacket, start_ecs_runner, Account, Client, DefaultPlugins, Event, JoinError,
-    StartClientOpts,
+    chat::ChatPacket, Account, DefaultPlugins, Event, JoinError
 };
 use azalea_protocol::{resolver, ServerAddress};
 use azalea_world::InstanceContainer;
@@ -18,7 +17,7 @@ use std::{collections::HashMap, future::Future, net::SocketAddr, sync::Arc, time
 use tokio::sync::mpsc;
 use tracing::error;
 
-use crate::{BoxHandleFn, DefaultBotPlugins, HandleFn, JoinOpts, NoState, StartError};
+use crate::{DefaultBotPlugins, JoinOpts, NoState, StartError};
 
 /// A swarm is a way to conveniently control many bots at once, while also
 /// being able to control bots at an individual level when desired.

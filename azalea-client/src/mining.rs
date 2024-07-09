@@ -19,7 +19,11 @@ use crate::{
     inventory::{InventoryComponent, InventorySet},
     local_player::{LocalGameMode, PermissionLevel, PlayerAbilities},
     movement::MoveEventsSet,
+<<<<<<< Updated upstream
     packet_handling::game::SendPacketEvent,
+=======
+    packet_handling::game::SendPacketEvent
+>>>>>>> Stashed changes
 };
 
 /// A plugin that allows clients to break blocks in the world.

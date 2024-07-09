@@ -20,7 +20,10 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 use uuid::Uuid;
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 use crate::packet_handling::game::{handle_send_packet_event, SendPacketEvent};
 
 /// A chat packet, either a system message or a chat message.

@@ -30,7 +30,14 @@ pub mod task_pool;
 
 pub use account::{Account, AccountOpts};
 pub use azalea_protocol::packets::configuration::serverbound_client_information_packet::ClientInformation;
+<<<<<<< Updated upstream
 
+=======
+pub use client::{
+    DefaultPlugins, JoinError, JoinedClientBundle
+};
+pub use events::Event;
+>>>>>>> Stashed changes
 pub use local_player::{GameProfileComponent, InstanceHolder, TabList};
 pub use movement::{
     PhysicsState, SprintDirection, StartSprintEvent, StartWalkEvent, WalkDirection,

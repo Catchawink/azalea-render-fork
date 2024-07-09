@@ -42,6 +42,7 @@ use bevy_app::{
     App, AppExit, FixedMain, FixedMainScheduleOrder, FixedUpdate, Main, MainSchedulePlugin, Plugin,
     PluginGroup, PluginGroupBuilder, Plugins, PluginsState, PreUpdate, Update,
 };
+<<<<<<< Updated upstream
 use bevy_ecs::{
     component::Component,
     event::{Event, EventReader},
@@ -89,13 +90,66 @@ pub struct ClientBuilder<'a> {
 
 impl<'a> ClientBuilder<'a> {
     pub fn new(account: &'a Account, address: &'a ServerAddress) -> ClientBuilder<'a> {
+=======
+
+use azalea_world::{Instance, InstanceContainer};
+use bevy_app::{App, FixedMainScheduleOrder, FixedUpdate, Plugin, PluginGroup, PluginGroupBuilder, Plugins, PluginsState, Update};
+use bevy_ecs::{component::Component, schedule::IntoSystemConfigs, system::Resource};
+use bevy_time::{Fixed, Time, TimePlugin, Virtual};
+use parking_lot::RwLock;
+use tokio::runtime;
+use tracing::{debug, error, Level};
+
+use crate::{
+    attack::{self, AttackPlugin},
+    chat::ChatPlugin,
+    chunks::{ChunkBatchInfo, ChunkPlugin},
+    configuration::ConfigurationPlugin,
+    disconnect::DisconnectPlugin,
+    interact::{CurrentSequenceNumber, InteractPlugin},
+    inventory::{InventoryComponent, InventoryPlugin},
+    local_player::{Hunger, PermissionLevel, PlayerAbilities},
+    mining::{self, MinePlugin},
+    movement::{LastSentLookDirection, PlayerMovePlugin},
+    packet_handling::PacketHandlerPlugin,
+    player::retroactively_add_game_profile_component,
+    raw_connection::RawConnection,
+    respawn::RespawnPlugin,
+    task_pool::TaskPoolPlugin,
+    Account, GameProfileComponent, InstanceHolder, PhysicsState, TabList,
+};
+
+#[derive(Resource)]
+pub struct TokioRuntime {
+    pub rt: runtime::Runtime,
+}
+
+pub struct ClientBuilder<'a> {
+    pub app: App,
+    pub rt: runtime::Runtime,
+    pub account: &'a Account,
+    pub address: &'a ServerAddress,
+    pub resolved_address: &'a SocketAddr,
+    pub proxy: Option<Proxy>,
+}
+
+impl<'a> ClientBuilder<'a> {
+    pub fn new(
+        account: &'a Account,
+        address: &'a ServerAddress,
+        resolved_address: &'a SocketAddr,
+    ) -> ClientBuilder<'a> {
+>>>>>>> Stashed changes
         let rt = runtime::Runtime::new().unwrap();
 
         let mut app = App::new();
         app.add_plugins(DefaultPlugins);
 
+<<<<<<< Updated upstream
         let resolved_address = rt.block_on(resolve_address(address)).unwrap();
 
+=======
+>>>>>>> Stashed changes
         Self {
             app,
             rt,
@@ -161,6 +215,7 @@ pub enum JoinError {
 }
 
 impl ClientBuilder<'_> {
+<<<<<<< Updated upstream
     pub fn run(mut self) -> Result<(), JoinError> {
         self.rt.handle().clone().block_on(Self::init(
             &mut self.app,
@@ -203,12 +258,53 @@ impl ClientBuilder<'_> {
 
             // add the account to the entity now so plugins can access it earlier
             app.world.entity_mut(entity).insert(account.to_owned());
+=======
+    pub fn run(self) -> Result<(), JoinError> {
+        self.rt.handle().clone().block_on(self.init())?.run();
+        Ok(())
+    }
+
+    pub async fn init(mut self) -> Result<App, JoinError> {
+        // check if an entity with our uuid already exists in the ecs and if so then
+        // just use that
+        let entity = {
+            let entity_uuid_index = self.app.world.resource::<EntityUuidIndex>();
+            let uuid = self.account.uuid_or_offline();
+            let entity =
+                if let Some(entity) = entity_uuid_index.get(&self.account.uuid_or_offline()) {
+                    debug!("Reusing entity {entity:?} for client");
+                    entity
+                } else {
+                    let entity = self.app.world.spawn_empty().id();
+                    debug!("Created new entity {entity:?} for client");
+                    // add to the uuid index
+                    let mut entity_uuid_index = self.app.world.resource_mut::<EntityUuidIndex>();
+                    entity_uuid_index.insert(uuid, entity);
+                    entity
+                };
+
+            // add the Account to the entity now so plugins can access it earlier
+            self.app
+                .world
+                .entity_mut(entity)
+                .insert(self.account.to_owned());
+>>>>>>> Stashed changes
 
             entity
         };
 
+<<<<<<< Updated upstream
         let (conn, game_profile) =
             Self::handshake(account, address, resolved_address, proxy).await?;
+=======
+        let (conn, game_profile) = Self::handshake(
+            self.account,
+            self.address,
+            self.resolved_address,
+            self.proxy,
+        )
+        .await?;
+>>>>>>> Stashed changes
 
         // note that we send the proper packets in
         // crate::configuration::handle_in_configuration_state
@@ -226,11 +322,19 @@ impl ClientBuilder<'_> {
             Arc::new(RwLock::new(instance)),
         );
 
+<<<<<<< Updated upstream
         app.world.entity_mut(entity).insert((
             // these stay when we switch to the game state
             LocalPlayerBundle {
                 raw_connection: RawConnection::new(
                     handle,
+=======
+        self.app.world.entity_mut(entity).insert((
+            // these stay when we switch to the game state
+            LocalPlayerBundle {
+                raw_connection: RawConnection::new(
+                    self.rt.handle().clone(),
+>>>>>>> Stashed changes
                     ConnectionProtocol::Configuration,
                     read_conn,
                     write_conn,
@@ -242,7 +346,13 @@ impl ClientBuilder<'_> {
             InConfigurationState,
         ));
 
+<<<<<<< Updated upstream
         Ok(())
+=======
+        self.app.world.insert_resource(TokioRuntime { rt: self.rt });
+
+        Ok(self.app)
+>>>>>>> Stashed changes
     }
 
     /// Do a handshake with the server and get to the game state from the
@@ -384,6 +494,7 @@ impl ClientBuilder<'_> {
         };
         Ok((conn, profile))
     }
+<<<<<<< Updated upstream
 }
 
 #[derive(Event)]
@@ -408,6 +519,8 @@ impl AddClientEvent {
             proxy,
         }
     }
+=======
+>>>>>>> Stashed changes
 }
 
 /// The bundle of components that's shared when we're either in the
@@ -472,6 +585,7 @@ fn run_loop(mut app: App) {
     app.finish();
     app.cleanup();
 
+<<<<<<< Updated upstream
     let mut system_state = SystemState::<EventReader<AppExit>>::new(&mut app.world);
     loop {
         let events = system_state.get(&mut app.world);
@@ -479,6 +593,9 @@ fn run_loop(mut app: App) {
         if !events.is_empty() {
             break;
         }
+=======
+    loop {
+>>>>>>> Stashed changes
         app.update();
     }
 }
@@ -509,7 +626,9 @@ impl PluginGroup for DefaultPlugins {
             .add(TickPlugin);
         #[cfg(feature = "log")]
         {
-            group = group.add(bevy_log::LogPlugin::default());
+            let mut log = bevy_log::LogPlugin::default();
+            log.level = Level::DEBUG;
+            group = group.add(log);
         }
         group
     }

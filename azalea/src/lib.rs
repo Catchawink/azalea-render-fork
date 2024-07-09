@@ -46,10 +46,6 @@ use thiserror::Error;
 pub use bevy_app as app;
 pub use bevy_ecs as ecs;
 
-pub type BoxHandleFn<S> =
-    Box<dyn Fn(Client, azalea_client::Event, S) -> BoxFuture<'static, Result<(), anyhow::Error>>>;
-pub type HandleFn<S, Fut> = fn(Client, azalea_client::Event, S) -> Fut;
-
 #[derive(Error, Debug)]
 pub enum StartError {
     #[error("Invalid address")]
@@ -121,33 +117,6 @@ impl ClientBuilder<NoState> {
     pub fn new_without_plugins() -> ClientBuilder<NoState> {
         Self {
             swarm: SwarmBuilder::new_without_plugins(),
-        }
-    }
-
-    /// Set the function that's called every time a bot receives an [`Event`].
-    /// This is the way to handle normal per-bot events.
-    ///
-    /// Currently you can have up to one client handler.
-    ///
-    /// ```
-    /// # use azalea::prelude::*;
-    /// # let client_builder = azalea::ClientBuilder::new();
-    /// client_builder.set_handler(handle);
-    ///
-    /// # #[derive(Component, Clone, Default)]
-    /// # pub struct State;
-    /// async fn handle(mut bot: Client, event: Event, state: State) -> anyhow::Result<()> {
-    ///     Ok(())
-    /// }
-    /// ```
-    #[must_use]
-    pub fn set_handler<S, Fut>(self, handler: HandleFn<S, Fut>) -> ClientBuilder<S>
-    where
-        S: Default + Send + Sync + Clone + Component + 'static,
-        Fut: Future<Output = Result<(), anyhow::Error>> + Send + 'static,
-    {
-        ClientBuilder {
-            swarm: self.swarm.set_handler(handler),
         }
     }
 }

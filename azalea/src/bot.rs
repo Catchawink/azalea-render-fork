@@ -1,7 +1,6 @@
 use crate::accept_resource_packs::AcceptResourcePacksPlugin;
 use crate::app::{App, Plugin, PluginGroup, PluginGroupBuilder};
 use crate::auto_respawn::AutoRespawnPlugin;
-use crate::container::ContainerPlugin;
 use crate::ecs::{
     component::Component,
     entity::Entity,
@@ -11,7 +10,6 @@ use crate::ecs::{
 };
 use azalea_client::interact::SwingArmEvent;
 use azalea_client::mining::Mining;
-use azalea_client::TickBroadcast;
 use azalea_core::position::{BlockPos, Vec3};
 use azalea_core::tick::GameTick;
 use azalea_entity::{
@@ -87,58 +85,6 @@ pub trait BotClientExt {
     fn mine(&mut self, position: BlockPos) -> impl Future<Output = ()> + Send;
 }
 
-impl BotClientExt for azalea_client::Client {
-    fn jump(&mut self) {
-        let mut ecs = self.ecs.lock();
-        ecs.send_event(JumpEvent {
-            entity: self.entity,
-        });
-    }
-
-    fn look_at(&mut self, position: Vec3) {
-        let mut ecs = self.ecs.lock();
-        ecs.send_event(LookAtEvent {
-            entity: self.entity,
-            position,
-        });
-    }
-
-    /// ```
-    /// # use azalea::prelude::*;
-    /// # use azalea::container::WaitingForInventoryOpen;
-    /// # async fn example(bot: &mut azalea::Client) {
-    /// let mut ticks = bot.get_tick_broadcaster();
-    /// while ticks.recv().await.is_ok() {
-    ///     let ecs = bot.ecs.lock();
-    ///     if ecs.get::<WaitingForInventoryOpen>(bot.entity).is_none() {
-    ///         break;
-    ///     }
-    /// }
-    /// # }
-    /// ```
-    fn get_tick_broadcaster(&self) -> tokio::sync::broadcast::Receiver<()> {
-        let ecs = self.ecs.lock();
-        let tick_broadcast = ecs.resource::<TickBroadcast>();
-        tick_broadcast.subscribe()
-    }
-
-    async fn mine(&mut self, position: BlockPos) {
-        self.start_mining(position);
-        // vanilla sends an extra swing arm packet when we start mining
-        self.ecs.lock().send_event(SwingArmEvent {
-            entity: self.entity,
-        });
-
-        let mut receiver = self.get_tick_broadcaster();
-        while receiver.recv().await.is_ok() {
-            let ecs = self.ecs.lock();
-            if ecs.get::<Mining>(self.entity).is_none() {
-                break;
-            }
-        }
-    }
-}
-
 /// Event to jump once.
 #[derive(Event)]
 pub struct JumpEvent {
@@ -210,7 +156,6 @@ impl PluginGroup for DefaultBotPlugins {
         PluginGroupBuilder::start::<Self>()
             .add(BotPlugin)
             .add(PathfinderPlugin)
-            .add(ContainerPlugin)
             .add(AutoRespawnPlugin)
             .add(AcceptResourcePacksPlugin)
     }
