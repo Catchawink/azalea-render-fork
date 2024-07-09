@@ -271,7 +271,7 @@ dependencies = [
 
 [[package]]
 name = "azalea-brigadier"
-version = "0.10.0"
+version = "0.10.2"
 dependencies = [
  "azalea-buf",
  "azalea-chat",
@@ -445,7 +445,7 @@ dependencies = [
 
 [[package]]
 name = "azalea-physics"
-version = "0.10.0"
+version = "0.10.2"
 dependencies = [
  "azalea-block",
  "azalea-core",
