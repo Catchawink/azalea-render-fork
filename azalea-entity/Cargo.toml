@@ -19,8 +19,8 @@ azalea-core = { version = "0.10.0", path = "../azalea-core" }
 azalea-inventory = { version = "0.10.0", path = "../azalea-inventory" }
 azalea-registry = { version = "0.10.0", path = "../azalea-registry" }
 azalea-world = { version = "0.10.0", path = "../azalea-world" }
-bevy_app = "0.13.2"
-bevy_ecs = "0.13.2"
+bevy_app = "0.14.0"
+bevy_ecs = "0.14.0"
 derive_more = "0.99.17"
 enum-as-inner = "0.6.0"
 tracing = "0.1.40"

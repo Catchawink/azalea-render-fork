@@ -10,7 +10,7 @@ use bevy_ecs::{
 use parking_lot::Mutex;
 
 pub trait EntityPredicate<Q: QueryData, Filter: QueryFilter> {
-    fn find(&self, ecs_lock: Arc<Mutex<World>>) -> Option<Entity>;
+    fn find(&self, ecs_lock: Arc<Mutex<&'static mut World>>) -> Option<Entity>;
 }
 impl<F, Q, Filter> EntityPredicate<Q, Filter> for F
 where
@@ -18,7 +18,7 @@ where
     Q: QueryData,
     Filter: QueryFilter,
 {
-    fn find(&self, ecs_lock: Arc<Mutex<World>>) -> Option<Entity> {
+    fn find(&self, ecs_lock: Arc<Mutex<&'static mut World>>) -> Option<Entity> {
         let mut ecs = ecs_lock.lock();
         let mut query = ecs.query_filtered::<(Entity, Q), Filter>();
         let entity = query.iter(&ecs).find(|(_, q)| (self)(q)).map(|(e, _)| e);

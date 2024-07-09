@@ -142,10 +142,10 @@ impl Simulation {
 
     pub fn tick(&mut self) {
         self.app.update();
-        self.app.world.run_schedule(GameTick);
+        self.app.world_mut().run_schedule(GameTick);
     }
     pub fn position(&self) -> Vec3 {
-        **self.app.world.get::<Position>(self.entity).unwrap()
+        **self.app.world_mut().get::<Position>(self.entity).unwrap()
     }
 }
 
@@ -161,17 +161,17 @@ impl SimulationSet {
     }
     pub fn tick(&mut self) {
         self.app.update();
-        self.app.world.run_schedule(GameTick);
+        self.app.world_mut().run_schedule(GameTick);
     }
 
     pub fn spawn(&mut self, player: SimulatedPlayerBundle) -> Entity {
         create_simulation_player(&mut self.app.world, self.instance.clone(), player)
     }
     pub fn despawn(&mut self, entity: Entity) {
-        self.app.world.despawn(entity);
+        self.app.world_mut().despawn(entity);
     }
 
     pub fn position(&self, entity: Entity) -> Vec3 {
-        **self.app.world.get::<Position>(entity).unwrap()
+        **self.app.world_mut().get::<Position>(entity).unwrap()
     }
 }

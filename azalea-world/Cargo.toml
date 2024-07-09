@@ -16,8 +16,13 @@ azalea-core = { path = "../azalea-core", version = "0.10.0", features = [
 	"bevy_ecs",
 ] }
 azalea-registry = { path = "../azalea-registry", version = "0.10.0" }
+<<<<<<< Updated upstream
 bevy_ecs = "0.13.2"
 derive_more = { version = "0.99.17", features = ["deref", "deref_mut"] }
+=======
+bevy_ecs = "0.14.0"
+derive_more = { version = "0.99.18", features = ["deref", "deref_mut"] }
+>>>>>>> Stashed changes
 tracing = "0.1.40"
 nohash-hasher = "0.2.0"
 once_cell = "1.19.0"
